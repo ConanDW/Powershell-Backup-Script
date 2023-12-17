@@ -1,11 +1,8 @@
-<#OSLWB Open Source Lightweight Windows Backup - Copyright Cameron Day (2023)#>
+<#OSLWUB Open Source Lightweight Windows/Unix Backup - Copyright Cameron Day (2023)#>
 <#Distrubuted under GNU GPLv2 License.#>
-<#--Declorations--#>
-$linePart ="------"
-<#--End Declorations--#>
-<#Functions Section#>
+#--region Functions
 function QuickLocalBackupSingle { #Option 1
-        function StartDirCollection { #Function container for 
+    function StartDirCollection { #Function container for 
         function AddDirToColllection {
             $linePart + "--------"
             Write-Output "Please type the directories you wish to back up (Ex: C:\Users\):"
@@ -16,43 +13,73 @@ function QuickLocalBackupSingle { #Option 1
             $linePart + "--------"
             [string]$GetBackupDirectoriesRH = Read-Host "Directory Path(s)"
             $linePart + "--------"
-            Set-Variable -Name "RequestedDirectoriesTempVar" -Value ($GetBackupDirectoriesRH) -Scope global -Description "Variable for Backup Directories"
+            Set-Variable -Name "RequestedDirectories" -Value ($GetBackupDirectoriesRH) -Scope global -Description "Variable for Backup Directories"
         }
         AddDirToColllection 
     }
     StartDirCollection
-    $RequestedDirectories = $RequestedDirectoriesTempVar.Split(",")
-    $RequestedDirectories
+    #TO DO FIGURE OUT HOW TO ADD MULTIPLE PATHS TO COMPRESS ARCHIVE
     [string]$DestinationPath = "C:\test"
+    <#--
     [string]$Paths = $RequestedDirectories
-    <#
     If (-Not (Test-Path $Paths)) {  #error catch to see if the path exists
         Throw "The source directory $Paths does not exist, please specify an existing directory"
     }
-    #>
+    --#>
+    Robocopy.exe 
+ 
     $date = Get-Date -format "yyyy-MM-dd" #creates a date var to store date variable 
-    Compress-Archive -Path $(foreach ($part in $RequestedDirectories) {}) -CompressionLevel 'Fastest' -DestinationPath "$($DestinationPath + '\' + 'backup-' + $date)" #compresses the files, sets path as the destination path then adds the word backup and the date
+    Compress-Archive -Path $Paths -CompressionLevel 'Fastest' -DestinationPath "$($DestinationPath + '\' + 'backup-' + $date)" #compresses the files, sets path as the destination path then adds the word backup and the date
     Write-Host "Created backup at $($DestinationPath + '\' + 'backup-' + $date)"
     
 }
-<#End Functions Section#>
-<#Start Section#>
-$RestartScript = $False
+function FTPConnect() {
+    $SendNumberToDartFile = null
+    Write-Output "Please select to upload or download the most recent backup. Select 'u' for upload or 'd' for download`r`n"
+    $GetActionForFtp = Read-Host
+    [ipaddress]$GetFTPAddress = Read-Host
+    [securestring]$GetFTPUserName = Read-Host
+    [securestring]$GetFTPPassword = Read-Host
+    if ($GetActionForFtp -eq "u") {
+        $SendToDartJson = [PSCustomObject]@{}
+        $SendToDartJson | Add-Member -MemberType AliasProperty -Name FTPAddress -Value $GetActionForFtp
+        $SendToDartJson | Add-Member -MemberType AliasProperty -Name FTPUserName -Value $GetFTPUserName
+        $SendToDartJson | Add-Member -MemberType AliasProperty -Name FTPPassword -Vaue $GetFTPPassword
+        $SendToDartJson | ConvertTo-Json | Out-File -FilePath ".\C:\OSLWUB"
+    } elseif ($GetActionForFtp -eq "d") {
+        #dont know how to interlope dart yey
+    }
+    
+}
+#--endregion Functions
+#--region Script Start--
+$script:RestartScript = $False
+$script:firstStart = $True
+if (-not(Test-Path "C:\OSLWUB")) {mkdir -Path "C:\OSLWUB"}
 Do {
-    " "
+    # Init PowerShell Gui
+    Add-Type -AssemblyName System.Windows.Forms
+    # Create a new form
+    $LocalPrinterForm                    = New-Object system.Windows.Forms.Form
+    # Define the size, title and background color
+    $LocalPrinterForm.ClientSize         = '1920,1080'
+    $LocalPrinterForm.text               = "OSLWUB Manager "
+    $LocalPrinterForm.BackColor          = "#ffffff"
+    # Display the form
+    [void]$LocalPrinterForm.ShowDialog()
+    #Option selection
     $linePart + "--------"
     Write-Output "Please Make A Selection:"
     $linePart + "--------"
-    " "
-    Write-Output "Mode 1: Quick Local Multi-Directory Backup (Backups Directories or Full Drives into a Compressed Zip File)"
+    Write-Output "Mode 1: Quick Local Multi-Directory Backup (Backups Directory or Multiple Directories into a Compressed Zip File)"
     $linePart
     Write-Output "Mode 2: Backup to External Device (Ex: Another Internal SSD, External HDD)"
     $linePart
-    Write-Output "Mode 3: Full Local Backup (FTP)"
+    Write-Output "Mode 3: Send Backup to FTP Server"
     $linePart
     Write-Output "4: Settings"
     $linePart
-    Write-Output "5: Exit"
+    Write-Output "5: Exit Script and Return to PS"
     $linePart
     Write-Output "6: Exit & Shutdown PWSH"
     try {
@@ -81,7 +108,7 @@ Do {
         }
     }
 } Until ($RestartScript -eq $False)
-<#End Start Section#>
+#--endregion Script Start
 
 
 
