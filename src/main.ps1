@@ -1,5 +1,6 @@
 <#OSLWUB Open Source Lightweight Windows/Unix Backup - Copyright Cameron Day (2023)#>
 <#Distrubuted under GNU GPLv2 License.#>
+$linePart = "--------`r`n"
 #--region Functions
 function QuickLocalBackupSingle { #Option 1
     function StartDirCollection { #Function container for 
@@ -8,8 +9,6 @@ function QuickLocalBackupSingle { #Option 1
             Write-Output "Please type the directories you wish to back up (Ex: C:\Users\):"
             $linePart
             Write-Output "Seperate the directories you wish to back up with a comma. (Ex: C:\Users\, C:\Program Files\)"
-            $linePart + "--------"
-            " "
             $linePart + "--------"
             [string]$GetBackupDirectoriesRH = Read-Host "Directory Path(s)"
             $linePart + "--------"
@@ -55,7 +54,7 @@ function FTPConnect() {
 #--region Script Start--
 $script:RestartScript = $False
 $script:firstStart = $True
-if (-not(Test-Path "C:\OSLWUB")) {mkdir -Path "C:\OSLWUB"}
+if (-not(Test-Path "C:\OSLWUB")) {mkdir -Path "C:\OSLWUB"} #Check for folder path, create one if it doesn't exist
 Do {
     # Init PowerShell Gui
     Add-Type -AssemblyName System.Windows.Forms
@@ -96,16 +95,12 @@ Do {
     $linePart
     Write-Output "You have selected $OptionSelection"
     $linePart
-    " "
     switch ($OptionSelection) {
         1 {QuickLocalBackupSingle}
+        3 {FTPConnect}
         5 {Exit-PSHostProcess}
-        6 {
-            Exit 
-        }
-        Default {
-            $RestartScript = $True
-        }
+        6 {Exit}
+        Default {$RestartScript = $True}
     }
 } Until ($RestartScript -eq $False)
 #--endregion Script Start

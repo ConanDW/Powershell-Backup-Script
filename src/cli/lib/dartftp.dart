@@ -15,7 +15,7 @@ UploadFilesFromPwshScript() async{
     }
 }
 DownloadFilesFromPwshScript() async{
-  FTPConnect ftpConnect = FTPConnect('example.com',user:'user', pass:'pass');
+  FTPConnect ftpConnect = FTPConnect('192.168.2.1',user:'user', pass:'pass');
   var Date = DateTime.timestamp();
   var BackupFileName = "BackupFromFTP.zip";
   try {
