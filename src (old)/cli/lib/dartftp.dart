@@ -28,5 +28,4 @@ DownloadFilesFromPwshScript() async{
     stderr.write(("Something went wrong, please try again."));
     log("Something went wrong, please try again.");
   }
-  
 }
